@@ -69,3 +69,34 @@ if compass.is_calibrated() == True :
     else : 
         compass.clear_calibration()
 """
+
+
+# Partie de la veilleuse, avec une certaine luminosité, il faut allumer ou éteindre la veilleuse (Stitch). PS: J'ai juste mis 0 pour l'instant pour dire que c'est sombre, avec des tests je pourrais en savoir plus.
+
+display.show(Image.DUCK)
+light_level = display.read_light_level()
+sleep(100)
+
+while True:
+    if button_a.was_pressed():
+        light_level = display.read_light_level()
+        display.show(Image.DIAMOND_SMALL)
+        sleep(400)
+        display.show(Image.DIAMOND)
+        sleep(900)
+        display.scroll('Set') # C'est long le commentaire.
+        display.show(Image.DUCK)
+
+    elif button_b.was_pressed():
+        display.clear()
+        if light_level == 0:
+            display.scroll('Activate Stitch')
+        else:
+            display.scroll('Deactivate Stitch')
+            # Stitch est la veilleuse.
+        sleep(500)
+        display.show(Image.DUCK)
+    else:
+        if pin_logo.is_touched():
+            display.scroll(light_level)
+            display.show(Image.DUCK)
