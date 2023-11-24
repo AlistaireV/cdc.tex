@@ -54,4 +54,18 @@ while True :
     sleep(1000)
     time_secondes +=1
     alerte_temperature = temperature_alert()
-    
+
+"""
+compass.calibrate()
+if compass.is_calibrated() == True : 
+        orientation1 = compass.heading()
+        sleep(12000)
+        orientation2 = compass.heading()
+        if orientation1 < 45 or orientation1 > 315 and orientation2 < 45 or orientation2 > 315 :
+            sleep(12000)
+            orientation3 = compass.heading()
+            if orientation3 < 45 or orientation3 > 315 : 
+                radio.send('Changer la position')
+    else : 
+        compass.clear_calibration()
+"""
