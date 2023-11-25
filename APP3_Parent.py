@@ -7,6 +7,11 @@ MILK_COUNT = 0
 
 
 def start():
+    """ Cette fonction sert à l'allumage
+        Cette fonction permet de lancer une musique lors de l'allumage du Betag 
+    pré: pousser le boutton d'allumage pour passer de l'état éteint à allumé
+    post: fait une musique 
+    """
     for x in range(2):
         music.play(["C4:4", "D4", "E4", "C4"])
     for x in range(2):
@@ -15,6 +20,11 @@ def start():
     
 
 def menu():
+    """ Cette fonction et l interface menu 
+        Cette fonction permet d avoir un menu avec une image et d'acceder aux différentes fonctions du BEtag
+        pré: start ()
+        post: affiche une image de menu et donne accès à tous les commande possible
+    """
     while True:
         display.show(Image.DUCK)
         if button_a.was_pressed() : 
@@ -22,6 +32,11 @@ def menu():
 
 
 def setting():
+    """ Cette fonction permet de compter la dose de lait donner au bébé 
+        Cette fonction permet de compter la dose de lait donner au bébé et l'envoyer au BEtag bébé
+    pré: le button a doit etre préssé dans le menu pour activer la fonction
+    post: affiche le compteur de dose de lait et l'envoit au BEtag enfant
+    """
     global MILK_COUNT
     display.scroll(" milk")
     display.show(MILK_COUNT)
@@ -39,7 +54,6 @@ def setting():
             display.show(MILK_COUNT)
             sleep(500)
         if pin_logo.is_touched():
-            # Sauvegarde la valeur das  la mémoire flash
             menu()
 
 def main():
