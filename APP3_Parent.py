@@ -51,7 +51,8 @@ def setting():
             sleep(500)
         if accelerometer.was_gesture('shake'):
             MILK_COUNT = 0
-            display.show(MILK_COUNT)
+            display.show(MILK_COUNT) #je fais un test
+            
             sleep(500)
         if pin_logo.is_touched():
             menu()
