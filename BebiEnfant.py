@@ -2,7 +2,7 @@
 from microbit import *
 import radio
 
-radio.config(group=22)
+radio.config(group=23)
 radio.on()
 import log 
 """
@@ -100,3 +100,48 @@ while True:
         if pin_logo.is_touched():
             display.scroll(light_level)
             display.show(Image.DUCK)
+
+
+
+def vigenere(message, key, decryption=False):
+    text = ""
+    key_length = len(key)
+    key_as_int = [ord(k) for k in key]
+
+    for i, char in enumerate(str(message)): #le i fait réf à la position du str et le char fait réf ay caractère de la position 
+        key_index = i % key_length
+        #Letters encryption/decryption
+        if char.isalpha():
+            if decryption:
+                modified_char = chr((ord(char.upper()) - key_as_int[key_index] + 26) % 26 + ord('A'))
+            else : 
+                modified_char = chr((ord(char.upper()) + key_as_int[key_index] - 26) % 26 + ord('A'))
+            #Put back in lower case if it was
+            #La fonction ord() permet de renvoyer la valeur unicode associé au caractère
+            #la fonction chr() fait l'inverse càd qu'elle renvoie le caractère associé à la valeur unicode
+            if char.islower():
+                modified_char = modified_char.lower()
+            text += modified_char
+        #Digits encryption/decryption
+        elif char.isdigit():
+            if decryption:
+                modified_char = str((int(char) - key_as_int[key_index]) % 10)
+            else:
+                modified_char = str((int(char) + key_as_int[key_index]) % 10)
+            text += modified_char
+        else:
+            text += char
+    return text
+
+while True :
+    password='singe'
+    if button_a.was_pressed() :
+        random_number = random.randrange(50000)
+        send_message=vigenere(str(random_number),password)
+        radio.send(send_message)
+        math_action= (random_number)*10
+        display.scroll(math_action)
+    send_message = radio.receive()
+    if send_message:
+        read_message=vigenere(send_message,password,True)
+        display.scroll(read_message)
