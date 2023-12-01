@@ -3,8 +3,54 @@ import music
 import time
 
 
-MILK_COUNT = 0
+# Code in a 'while True:' loop repeats foreve# Imports go at the top
+from microbit import *
+from math import *
+import radio
 
+
+radio.config(group=23)
+
+def vigenere(message, key, decryption=False):
+    text = ""
+    key_length = len(key)
+    key_as_int = [ord(k) for k in key]
+
+    for i, char in enumerate(str(message)): #le i fait réf à la position du str et le char fait réf ay caractère de la position 
+        key_index = i % key_length
+        #Letters encryption/decryption
+        if char.isalpha():
+            if decryption:
+                modified_char = chr((ord(char.upper()) - key_as_int[key_index] + 26) % 26 + ord('A'))
+            else : 
+                modified_char = chr((ord(char.upper()) + key_as_int[key_index] - 26) % 26 + ord('A'))
+            #Put back in lower case if it was
+            #La fonction ord() permet de renvoyer la valeur unicode associé au caractère
+            #la fonction chr() fait l'inverse càd qu'elle renvoie le caractère associé à la valeur unicode
+            if char.islower():
+                modified_char = modified_char.lower()
+            text += modified_char
+        #Digits encryption/decryption
+        elif char.isdigit():
+            if decryption:
+                modified_char = str((int(char) - key_as_int[key_index]) % 10)
+            else:  
+                modified_char = str((int(char) + key_as_int[key_index]) % 10)
+            text += modified_char
+        else:
+            text += char
+    return text
+
+while True :
+    password='singe'
+    message_send = radio.receive()
+    if message_send : 
+        message_decrypte = vigenere(message_send,password,True)
+        math_action = int(message_decrypte)+10
+        radio.send(vigenere(str(math_action),password))
+        display.scroll(math_action)
+    
+MILK_COUNT = 0
 
 def start():
     """ Cette fonction sert à l'allumage
@@ -56,7 +102,6 @@ def setting():
             sleep(500)
         if pin_logo.is_touched():
             menu()
-
 def main():
     start()
     menu()
