@@ -2,13 +2,6 @@ from microbit import *
 import music
 import time
 
-
-# Code in a 'while True:' loop repeats foreve# Imports go at the top
-from microbit import *
-from math import *
-import radio
-
-
 radio.config(group=23)
 
 def vigenere(message, key, decryption=False):
@@ -147,9 +140,9 @@ def send_packet(key, type, content):
     radio.send(type+"|"+len(messsage_to_send)+"|"messsage_to_send) #Envoie du message crypté avec le numéro de hashing à la fin 
     """
     hashed_message = hash(content) #We'll assign a value of hashing to the message to send
-    encrypted_message = vigenere(content,key) + hashed_message #The message we'll send is containing the message under a vigenere form + the value of hashing associated with 
+    encrypted_message = vigenere(content,key) + str(hashed_message) #The message we'll send is containing the message under a vigenere form + the value of hashing associated with 
     # the bright message 
-    random_number = randome.randrange(50000) #Choose a random number which will be directly associated with the message to send 
+    random_number = random.randrange(50000) #Choose a random number which will be directly associated with the message to send 
     len_message = len(encrypted_message) + len(str(random_number)) #Calculate the length of the message 
     message_to_send = '{0} | {1} | {2} : {3}'.format(type,len_message,str(random_number),encrypted_message) # 'str type' of the message to send
     ################
@@ -186,8 +179,9 @@ def unpack_data(encrypted_packet, key):
     #####
     if encrypted_packet[0] == '00' : 
         display.scroll('New connexion') #Le type 00 fera d'office référence à une nouvelle connexion
-        vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message 
-                
+        decrypted_message = vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message
+        decrypted_message.split(':')
+        calculate_challenge_response(decrypted_message[0])
     elif encrypted_packet[0] == '01' : 
         display.scroll('Milk count') #Le type 01 fera directement référence au compteur de lait
         vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message 
