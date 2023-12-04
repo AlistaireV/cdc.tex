@@ -41,14 +41,6 @@ def vigenere(message, key, decryption=False):
             text += char
     return text
 
-while True :
-    password='singe'
-    message_send = radio.receive()
-    if message_send : 
-        message_decrypte = vigenere(message_send,password,True)
-        math_action = int(message_decrypte)+10
-        radio.send(vigenere(str(math_action),password))
-        display.scroll(math_action)
     
 MILK_COUNT = 0
 
@@ -62,8 +54,6 @@ def start():
         music.play(["C4:4", "D4", "E4", "C4"])
     for x in range(2):
         music.play(["E4:4", "F4", "G4:8"])
-
-    
 
 def menu():
     """ Cette fonction et l interface menu 
@@ -102,6 +92,155 @@ def setting():
             sleep(500)
         if pin_logo.is_touched():
             menu()
+
+
+def hashing(string):
+	"""
+	Hachage d'une chaîne de caractères fournie en paramètre.
+	Le résultat est une chaîne de caractères.
+	Attention : cette technique de hachage n'est pas suffisante (hachage dit cryptographique) pour une utilisation en dehors du cours.
+
+	:param (str) string: la chaîne de caractères à hacher
+	:return (str): le résultat du hachage
+	"""
+	def to_32(value):
+		"""
+		Fonction interne utilisée par hashing.
+		Convertit une valeur en un entier signé de 32 bits.
+		Si 'value' est un entier plus grand que 2 ** 31, il sera tronqué.
+
+		:param (int) value: valeur du caractère transformé par la valeur de hachage de cette itération
+		:return (int): entier signé de 32 bits représentant 'value'
+		"""
+		value = value % (2 ** 32)
+		if value >= 2**31:
+			value = value - 2 ** 32
+		value = int(value)
+		return value
+
+	if string:
+		x = ord(string[0]) << 7
+		m = 1000003
+		for c in string:
+			x = to_32((x*m) ^ ord(c))
+		x ^= len(string)
+		if x == -1:
+			x = -2
+		return str(x)
+	return ""
+        
+
+
+
+def send_packet(key, type, content):
+    """
+    Envoie de données fournie en paramètres
+    Cette fonction permet de construire, de chiffrer puis d'envoyer un paquet via l'interface radio du micro:bit
+
+    :param (str) key:       Clé de chiffrement
+           (str) type:      Type du paquet à envoyer  
+           (str) content:   Données à envoyer
+	:return none
+    
+    messsage_to_send = vigenere(content,key) #We code the message we want to send in Vigenere form
+    value_message = hashing(content) #Here we'll hash the message we want to send and it will give use a number
+    radio.send(type+"|"+len(messsage_to_send)+"|"messsage_to_send) #Envoie du message crypté avec le numéro de hashing à la fin 
+    """
+    hashed_message = hash(content) #We'll assign a value of hashing to the message to send
+    encrypted_message = vigenere(content,key) + hashed_message #The message we'll send is containing the message under a vigenere form + the value of hashing associated with 
+    # the bright message 
+    random_number = randome.randrange(50000) #Choose a random number which will be directly associated with the message to send 
+    len_message = len(encrypted_message) + len(str(random_number)) #Calculate the length of the message 
+    message_to_send = '{0} | {1} | {2} : {3}'.format(type,len_message,str(random_number),encrypted_message) # 'str type' of the message to send
+    ################
+    #ATTENTION : l'attribut 'type' dans la méthode send_packet quand on l'utilise au sein de la méthode VSCode considère l'attribut 'type' comme la built-in function déjà 
+    #implémenté dans python. Donc il faudra voir si ça fonctionne quand même
+    ################
+    radio.send(message_to_send)
+
+
+#Decrypt and unpack the packet received and return the fields value
+def unpack_data(encrypted_packet, key):
+    """
+    Déballe et déchiffre les paquets reçus via l'interface radio du micro:bit
+    Cette fonction renvoit les différents champs du message passé en paramètre
+
+    :param (str) encrypted_packet: Paquet reçu
+           (str) key:              Clé de chiffrement
+	:return (srt)type:             Type de paquet
+            (int)lenght:           Longueur de la donnée en caractères
+            (str) message:         Données reçues
+    
+    if encrypted_packet : 
+        encrypted_packet.split('|') #Comme dans le message crypté envoyé on a mis un séparateur, on va pouvoir séparer
+        #notre message en deux et donc avoir une variable encrypted_message du style ['message en vigenere','valeurassocié'] 
+        if encrypted_packet[0] == '01' :
+            vigenere(encrypted_packet[1],key)
+
+        elif encrypted_packet[0] == '02' : 
+        elif encrypted_packet[0] == '03'
+    """
+    encrypted_packet.split(' | ') #Va permettre de créer une liste de longueur 3 qui contiendra en position 0 'le type' en position '1' la longueur et en position '2' le content 
+    #####
+    #L'objectif de mettre des if va permettre d'introduire les différentes instructions et méthodes à implémenter en fonction du type du message. 
+    #####
+    if encrypted_packet[0] == '00' : 
+        display.scroll('New connexion') #Le type 00 fera d'office référence à une nouvelle connexion
+        vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message 
+                
+    elif encrypted_packet[0] == '01' : 
+        display.scroll('Milk count') #Le type 01 fera directement référence au compteur de lait
+        vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message 
+    elif encrypted_packet[0] == '02' :
+        display.scroll('Temp measure') #Le type 02 fera référence aux mesures de températures en continues
+        vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message 
+    elif encrypted_packet[0] == '03' :
+        display.scroll('Sommeil agité') #Le type 03 devra toujours être relié à la fonction d'éveil du bébé
+        vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message 
+     
+        
+#Unpack the packet, check the validity and return the type, length and content
+def receive_packet(packet_received, key):
+    """
+    Traite les paquets reçue via l'interface radio du micro:bit
+    Cette fonction permet de construire, de chiffrer puis d'envoyer un paquet via l'interface radio du micro:bit
+    Si une erreur survient, les 3 champs sont retournés vides
+
+    :param (str) packet_received: Paquet reçue
+           (str) key:              Clé de chiffrement
+	:return (srt)type:             Type de paquet
+            (int)lenght:           Longueur de la donnée en caractère
+            (str) message:         Données reçue
+    """
+    unpack_data(packed_received,key)
+
+    
+#Calculate the challenge response
+def calculate_challenge_response(challenge):
+    """
+    Calcule la réponse au challenge initial de connection avec l'autre micro:bit
+
+    :param (str) challenge:            Challenge reçu
+	:return (srt)challenge_response:   Réponse au challenge
+    """
+    #challenge = Ici c'est pour répondre au challenge de connexion. 
+    #Le message recu va être du type '00 | longueur | nbre_aleatoire : nombre_aléatoire"
+    #1) Il faut utiliser vigenere pour décrypter le second nombre_aleatoire
+    # Avant d'utiliser cette fonction il y aura déjà eu un unpack_data()
+    return int(challenge)**(0.5)+5
+    
+
+#Ask for a new connection with a micro:bit of the same group
+def establish_connexion(key):
+    """
+    Etablissement de la connexion avec l'autre micro:bit
+    Si il y a une erreur, la valeur de retour est vide
+
+    :param (str) key:                  Clé de chiffrement
+	:return (srt)challenge_response:   Réponse au challenge
+    """
+    
+
 def main():
     start()
     menu()
