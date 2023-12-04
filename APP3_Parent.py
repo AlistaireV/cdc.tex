@@ -139,18 +139,15 @@ def send_packet(key, type, content):
     value_message = hashing(content) #Here we'll hash the message we want to send and it will give use a number
     radio.send(type+"|"+len(messsage_to_send)+"|"messsage_to_send) #Envoie du message crypté avec le numéro de hashing à la fin 
     """
-    hashed_message = hash(content) #We'll assign a value of hashing to the message to send
-    encrypted_message = vigenere(content,key) + str(hashed_message) #The message we'll send is containing the message under a vigenere form + the value of hashing associated with 
-    # the bright message 
-    random_number = random.randrange(50000) #Choose a random number which will be directly associated with the message to send 
-    len_message = len(encrypted_message) + len(str(random_number)) #Calculate the length of the message 
-    message_to_send = '{0} | {1} | {2} : {3}'.format(type,len_message,str(random_number),encrypted_message) # 'str type' of the message to send
-    ################
-    #ATTENTION : l'attribut 'type' dans la méthode send_packet quand on l'utilise au sein de la méthode VSCode considère l'attribut 'type' comme la built-in function déjà 
-    #implémenté dans python. Donc il faudra voir si ça fonctionne quand même
-    ################
-    radio.send(message_to_send)
 
+    hashed_message = hash(content) #We'll assign a value of hashing to the message to send
+    random_number = random.randrange(50000) #Choose a random number which will be directly associated with the message to send 
+    encrypted_message = str(random_number) + ' : ' + vigenere(content,key) + ' : ' + str(hashed_message) #The message we'll send is containing the message under a vigenere form + the value of hashing associated with 
+    # the bright message 
+    len_message = len(encrypted_message) #Calculate the length of the message 
+    message_to_send = '{0} | {1} | {2}'.format(type,len_message,encrypted_message) # 'str type' of the message to send
+
+    radio.send(message_to_send)
 
 #Decrypt and unpack the packet received and return the fields value
 def unpack_data(encrypted_packet, key):
@@ -173,24 +170,47 @@ def unpack_data(encrypted_packet, key):
         elif encrypted_packet[0] == '02' : 
         elif encrypted_packet[0] == '03'
     """
-    encrypted_packet.split(' | ') #Va permettre de créer une liste de longueur 3 qui contiendra en position 0 'le type' en position '1' la longueur et en position '2' le content 
-    #####
-    #L'objectif de mettre des if va permettre d'introduire les différentes instructions et méthodes à implémenter en fonction du type du message. 
-    #####
-    if encrypted_packet[0] == '00' : 
+    encrypted_packet = encrypted_packet.split(' | ') #Va permettre de créer une liste de longueur 3 qui contiendra en position 0 'le type' en position '1' la longueur et en position '2' le content 
+    encrypted_packet = tuple(encrypted_packet)
+    type_message,len_message,content = encrypted_packet
+    content = content.split(' : ')
+    """
+    En splittant la partie content avec les ' : ' ca va permettre d'avoir 
+    1) l'ID du message (un random number)
+    2) Le message en lui-même
+    3) La valeur sous forme d'int du hashing que l'on pourra comparer à celle obtenue après décodage 
+    """
+    if type_message == '00' : 
         display.scroll('New connexion') #Le type 00 fera d'office référence à une nouvelle connexion
-        decrypted_message = vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message
-        decrypted_message.split(':')
-        calculate_challenge_response(decrypted_message[0])
-    elif encrypted_packet[0] == '01' : 
+        decrypted_message = vigenere(content[1],key,True) #Here we will decrypt the content of the message
+        hashing_value = hashing(decrypted_message)
+        if hashing_value != content[2] : 
+             display.scroll("Invalid Message")
+
+        calculate_challenge_response(int(decrypted_message))
+
+    elif type_message == '01' : 
         display.scroll('Milk count') #Le type 01 fera directement référence au compteur de lait
-        vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message 
-    elif encrypted_packet[0] == '02' :
+        decrypted_message= vigenere(content[1],key,True) #Here we will decrypt the content of the message 
+        hashing_value = hashing(decrypted_message)
+        if hashing_value != content[2] : 
+             display.scroll("Invalid Message")
+    
+    elif type_message == '02' :
         display.scroll('Temp measure') #Le type 02 fera référence aux mesures de températures en continues
-        vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message 
-    elif encrypted_packet[0] == '03' :
+        decrypted_message = vigenere(content[1],key,True) #Here we will decrypt the content of the message
+        hashing_value = hashing(decrypted_message)
+        if hashing_value != content[2] : 
+             display.scroll("Invalid Message")
+
+    elif type_message == '03' :
         display.scroll('Sommeil agité') #Le type 03 devra toujours être relié à la fonction d'éveil du bébé
-        vigenere(encrypted_packet[2],key,True) #Here we will decrypt the content of the message 
+        decrypted_message = vigenere(content[1],key,True) #Here we will decrypt the content of the message
+        hashing_value = hashing(decrypted_message)
+        if hashing_value != content[2] : 
+             display.scroll("Invalid Message")
+
+    return decrypted_message 
      
         
 #Unpack the packet, check the validity and return the type, length and content
@@ -206,7 +226,7 @@ def receive_packet(packet_received, key):
             (int)lenght:           Longueur de la donnée en caractère
             (str) message:         Données reçue
     """
-    unpack_data(packed_received,key)
+    unpack_data(packet_received,key)
 
     
 #Calculate the challenge response
@@ -232,8 +252,23 @@ def establish_connexion(key):
 
     :param (str) key:                  Clé de chiffrement
 	:return (srt)challenge_response:   Réponse au challenge
+     
+     Etapes à suivre : 
+     1) Le BeTag va envoyer un random number codé sous vigenere 
+     2) Sous quelle forme ? Type | Longueur | Nonce : Message 
+     3) L'autre Tag reçoit
+     4) Entre-temps le BeTag qui envoie la connexion il calcule pour le challenge 
+     5) Il reçoit la notif de réponse sous vigenere de 'lautre BeTag 
+     6) Si la réponse est ok alors le mot de passe devient password+random number et la co est établi
     """
-    
+    nbre_aleatoire = random.randrange(50000)
+    send_packet(key,'00',nbre_aleatoire)
+    answer = calculate_challenge_response(nbre_aleatoire)
+    radio_answer = radio.receive()
+    if radio_answer :
+        decryption_message = unpack_data(radio_answer,key)
+        if int(decryption_message) == answer :
+             display.scroll('Connexion established') 
 
 def main():
     start()
