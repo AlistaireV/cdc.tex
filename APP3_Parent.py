@@ -1,6 +1,8 @@
 from microbit import *
 import music
 import time
+import radio
+import random
 
 radio.config(group=23)
 
@@ -70,6 +72,7 @@ def hashing(string):
 	return ""
     
 MILK_COUNT = 0
+SET_COUNT=0
 
 def start():
     """ Cette fonction sert à l'allumage
@@ -92,8 +95,36 @@ def menu():
         display.show(Image.DUCK)
         if button_a.was_pressed() : 
             setting()
+        if button_b.was_pressed():
+             establish_connexion("singe")
 
 def setting():
+     """Cette fonction permet de faire un choix de la fonnction 
+        Cette fonction permet de faire un choix entre toutes le fonctions du tag 
+        pré: un appel grace au button du menu 
+        post: affiche des chiffres pour sélectionner la fonctionalité 
+    """
+     display.scroll(" choose your function ") 
+     global SET_COUNT 
+     display.show(SET_COUNT)
+     while True :
+        if button_b.is_pressed():
+            SET_COUNT += 1
+            display.show(SET_COUNT)
+            sleep(500)
+        if button_a.is_pressed():
+            SET_COUNT -= 1
+            display.show(SET_COUNT)
+            sleep(500)
+        if accelerometer.was_gesture('shake'):
+            menu()
+        if pin_logo.is_touched():
+            if SET_COUNT == 1:
+                milk()
+     
+
+
+def milk():
     """ Cette fonction permet de compter la dose de lait donner au bébé 
         Cette fonction permet de compter la dose de lait donner au bébé et l'envoyer au BEtag bébé
     pré: le button a doit etre préssé dans le menu pour activer la fonction
