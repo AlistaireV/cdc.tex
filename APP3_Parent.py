@@ -131,7 +131,7 @@ def milk():
     post: affiche le compteur de dose de lait et l'envoit au BEtag enfant
     """
     global MILK_COUNT
-    display.scroll(" milk")
+    display.scroll("Milk")
     display.show(MILK_COUNT)
     while True:
         if button_b.is_pressed():
