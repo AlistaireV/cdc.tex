@@ -5,6 +5,65 @@ import radio
 radio.config(group=23)
 radio.on()
 import log 
+
+
+SET_COUNT=0
+
+def start():
+    """ Cette fonction sert à l'allumage
+        Cette fonction permet de lancer une musique lors de l'allumage du Betag 
+    pré: pousser le boutton d'allumage pour passer de l'état éteint à allumé
+    post: fait une musique 
+    """
+    for x in range(2):
+        music.play(["C4:4", "D4", "E4", "C4"])
+    for x in range(2):
+        music.play(["E4:4", "F4", "G4:8"])
+
+def menu():
+    """ Cette fonction et l interface menu 
+        Cette fonction permet d avoir un menu avec une image et d'acceder aux différentes fonctions du BEtag
+        pré: start ()
+        post: affiche une image de menu et donne accès à tous les commande possible
+    """
+    while True:
+        display.show(Image.DUCK)
+        if button_a.was_pressed() : 
+            setting()
+        if button_b.was_pressed():
+             establish_connexion("singe")
+
+def setting():
+     """Cette fonction permet de faire un choix de la fonnction 
+        Cette fonction permet de faire un choix entre toutes le fonctions du tag 
+        pré: un appel grace au button du menu 
+        post: affiche des chiffres pour sélectionner la fonctionalité 
+    """
+     display.scroll(" choose your function ") 
+     global SET_COUNT 
+     display.show(SET_COUNT)
+     while True :
+        if button_b.is_pressed():
+            SET_COUNT += 1
+            display.show(SET_COUNT)
+            sleep(500)
+        if button_a.is_pressed():
+            SET_COUNT -= 1
+            display.show(SET_COUNT)
+            sleep(500)
+        if accelerometer.was_gesture('shake'):
+            menu()
+        if pin_logo.is_touched():
+            if SET_COUNT == 1:
+                temperature_alert()
+            elif SET_COUNT == 2:
+                 show_light()
+            elif SET_COUNT == 3:
+                log_data()
+        
+
+            
+
 """
 Faire une boucle while True : 
     Mettre une condition, si delay = autant. 
@@ -143,3 +202,10 @@ while True :
     if send_message:
         read_message=vigenere(send_message,password,True)
         display.scroll(read_message)
+
+def main():
+    start()
+    menu()
+
+if __name__ == "__main__":
+    main()
