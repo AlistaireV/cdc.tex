@@ -34,59 +34,6 @@ def vigenere(message, key, decryption=False):
             text += char
     return text
 
-    
-MILK_COUNT = 0
-
-def start():
-    """ Cette fonction sert à l'allumage
-        Cette fonction permet de lancer une musique lors de l'allumage du Betag 
-    pré: pousser le boutton d'allumage pour passer de l'état éteint à allumé
-    post: fait une musique 
-    """
-    for x in range(2):
-        music.play(["C4:4", "D4", "E4", "C4"])
-    for x in range(2):
-        music.play(["E4:4", "F4", "G4:8"])
-
-def menu():
-    """ Cette fonction et l interface menu 
-        Cette fonction permet d avoir un menu avec une image et d'acceder aux différentes fonctions du BEtag
-        pré: start ()
-        post: affiche une image de menu et donne accès à tous les commande possible
-    """
-    while True:
-        display.show(Image.DUCK)
-        if button_a.was_pressed() : 
-            setting()
-
-
-def setting():
-    """ Cette fonction permet de compter la dose de lait donner au bébé 
-        Cette fonction permet de compter la dose de lait donner au bébé et l'envoyer au BEtag bébé
-    pré: le button a doit etre préssé dans le menu pour activer la fonction
-    post: affiche le compteur de dose de lait et l'envoit au BEtag enfant
-    """
-    global MILK_COUNT
-    display.scroll(" milk")
-    display.show(MILK_COUNT)
-    while True:
-        if button_b.is_pressed():
-            MILK_COUNT += 1
-            display.show(MILK_COUNT)
-            sleep(500)
-        if button_a.is_pressed():
-            MILK_COUNT -= 1
-            display.show(MILK_COUNT)
-            sleep(500)
-        if accelerometer.was_gesture('shake'):
-            MILK_COUNT = 0
-            display.show(MILK_COUNT) #je fais un test
-            
-            sleep(500)
-        if pin_logo.is_touched():
-            menu()
-
-
 def hashing(string):
 	"""
 	Hachage d'une chaîne de caractères fournie en paramètre.
@@ -121,9 +68,56 @@ def hashing(string):
 			x = -2
 		return str(x)
 	return ""
-        
+    
+MILK_COUNT = 0
 
+def start():
+    """ Cette fonction sert à l'allumage
+        Cette fonction permet de lancer une musique lors de l'allumage du Betag 
+    pré: pousser le boutton d'allumage pour passer de l'état éteint à allumé
+    post: fait une musique 
+    """
+    for x in range(2):
+        music.play(["C4:4", "D4", "E4", "C4"])
+    for x in range(2):
+        music.play(["E4:4", "F4", "G4:8"])
 
+def menu():
+    """ Cette fonction et l interface menu 
+        Cette fonction permet d avoir un menu avec une image et d'acceder aux différentes fonctions du BEtag
+        pré: start ()
+        post: affiche une image de menu et donne accès à tous les commande possible
+    """
+    while True:
+        display.show(Image.DUCK)
+        if button_a.was_pressed() : 
+            setting()
+
+def setting():
+    """ Cette fonction permet de compter la dose de lait donner au bébé 
+        Cette fonction permet de compter la dose de lait donner au bébé et l'envoyer au BEtag bébé
+    pré: le button a doit etre préssé dans le menu pour activer la fonction
+    post: affiche le compteur de dose de lait et l'envoit au BEtag enfant
+    """
+    global MILK_COUNT
+    display.scroll(" milk")
+    display.show(MILK_COUNT)
+    while True:
+        if button_b.is_pressed():
+            MILK_COUNT += 1
+            display.show(MILK_COUNT)
+            sleep(500)
+        if button_a.is_pressed():
+            MILK_COUNT -= 1
+            display.show(MILK_COUNT)
+            sleep(500)
+        if accelerometer.was_gesture('shake'):
+            MILK_COUNT = 0
+            display.show(MILK_COUNT) #je fais un test
+            
+            sleep(500)
+        if pin_logo.is_touched():
+            menu()
 
 def send_packet(key, type, content):
     """
@@ -139,7 +133,6 @@ def send_packet(key, type, content):
     value_message = hashing(content) #Here we'll hash the message we want to send and it will give use a number
     radio.send(type+"|"+len(messsage_to_send)+"|"messsage_to_send) #Envoie du message crypté avec le numéro de hashing à la fin 
     """
-
     hashed_message = hash(content) #We'll assign a value of hashing to the message to send
     random_number = random.randrange(50000) #Choose a random number which will be directly associated with the message to send 
     encrypted_message = str(random_number) + ' : ' + vigenere(content,key) + ' : ' + str(hashed_message) #The message we'll send is containing the message under a vigenere form + the value of hashing associated with 
@@ -180,8 +173,16 @@ def unpack_data(encrypted_packet, key):
     2) Le message en lui-même
     3) La valeur sous forme d'int du hashing que l'on pourra comparer à celle obtenue après décodage 
     """
-    if type_message == '00' : 
+    lst_message_00 = [] 
+    lst_message_01 = []
+    lst_message_02 = []
+    lst_message_03 = []
+    if type_message == '00' :
         display.scroll('New connexion') #Le type 00 fera d'office référence à une nouvelle connexion
+        if int(content[0]) in lst_message_00 : 
+            display.scroll('ERROR message already received')
+        else :    
+            lst_message_00.append(int(content[0]))
         decrypted_message = vigenere(content[1],key,True) #Here we will decrypt the content of the message
         hashing_value = hashing(decrypted_message)
         if hashing_value != content[2] : 
@@ -189,8 +190,12 @@ def unpack_data(encrypted_packet, key):
 
         calculate_challenge_response(int(decrypted_message))
 
-    elif type_message == '01' : 
+    elif type_message == '01' :
         display.scroll('Milk count') #Le type 01 fera directement référence au compteur de lait
+        if int(content[0]) in lst_message_01 : 
+            display.scroll('ERROR message already received')
+        else :    
+            lst_message_01.append(int(content[0]))
         decrypted_message= vigenere(content[1],key,True) #Here we will decrypt the content of the message 
         hashing_value = hashing(decrypted_message)
         if hashing_value != content[2] : 
@@ -198,6 +203,10 @@ def unpack_data(encrypted_packet, key):
     
     elif type_message == '02' :
         display.scroll('Temp measure') #Le type 02 fera référence aux mesures de températures en continues
+        if int(content[0]) in lst_message_02 : 
+            display.scroll('ERROR message already received')
+        else :    
+            lst_message_02.append(int(content[0]))
         decrypted_message = vigenere(content[1],key,True) #Here we will decrypt the content of the message
         hashing_value = hashing(decrypted_message)
         if hashing_value != content[2] : 
@@ -205,14 +214,17 @@ def unpack_data(encrypted_packet, key):
 
     elif type_message == '03' :
         display.scroll('Sommeil agité') #Le type 03 devra toujours être relié à la fonction d'éveil du bébé
+        if int(content[0]) in lst_message_03 : 
+            display.scroll('ERROR message already received')
+        else :    
+            lst_message_03.append(int(content[0]))
         decrypted_message = vigenere(content[1],key,True) #Here we will decrypt the content of the message
         hashing_value = hashing(decrypted_message)
         if hashing_value != content[2] : 
              display.scroll("Invalid Message")
 
     return decrypted_message 
-     
-        
+      
 #Unpack the packet, check the validity and return the type, length and content
 def receive_packet(packet_received, key):
     """
