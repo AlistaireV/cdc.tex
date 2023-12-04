@@ -29,7 +29,7 @@ def log_data():
     log.add({
       'Temperature': temperature(),
       'Heure': time_secondes
-      #'light': fonction circadienne de Kaan ()
+      'Light': read_light_level()
     })
 
 def temperature_alert() : 
@@ -72,34 +72,32 @@ if compass.is_calibrated() == True :
 
 
 # Partie de la veilleuse, avec une certaine luminosité, il faut allumer ou éteindre la veilleuse (Stitch). PS: J'ai juste mis 0 pour l'instant pour dire que c'est sombre, avec des tests je pourrais en savoir plus.
+def show_light():
+    global light_level
+    light_level = display.read_light_level()
+    display.show(Image.DIAMOND_SMALL)
+    sleep(400)
+    display.show(Image.DIAMOND)
+    sleep(900)
+    display.scroll('Light level:',100)
+    display.scroll(light_level,100)
+    display.show(Image.DUCK)
 
-display.show(Image.DUCK)
-light_level = display.read_light_level()
-sleep(100)
-
-while True:
-    if button_a.was_pressed():
-        light_level = display.read_light_level()
-        display.show(Image.DIAMOND_SMALL)
-        sleep(400)
-        display.show(Image.DIAMOND)
-        sleep(900)
-        display.scroll('Set') # C'est long le commentaire.
-        display.show(Image.DUCK)
-
-    elif button_b.was_pressed():
-        display.clear()
-        if light_level == 0:
-            display.scroll('Activate Stitch')
-        else:
-            display.scroll('Deactivate Stitch')
-            # Stitch est la veilleuse.
-        sleep(500)
+def light():
+    if light_level <= 50:
+        display.scroll('Activate Stitch',100)
         display.show(Image.DUCK)
     else:
-        if pin_logo.is_touched():
-            display.scroll(light_level)
-            display.show(Image.DUCK)
+        display.scroll('Deactivate Stitch',100)
+        display.show(Image.DUCK)
+    
+while True:
+    if button_a.was_pressed():
+        show_light()
+    elif button_b.was_pressed():
+        light()
+    elif pin_logo.is_touched():
+        menu()
 
 
 
