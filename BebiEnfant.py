@@ -114,20 +114,26 @@ while True :
     time_secondes +=1
     alerte_temperature = temperature_alert()
 
-"""
-compass.calibrate()
-if compass.is_calibrated() == True : 
+
+def calibration():
+    display.scroll(compass.heading())
+    compass.calibrate()
+    if compass.is_calibrated() == True : 
         orientation1 = compass.heading()
         sleep(12000)
         orientation2 = compass.heading()
-        if orientation1 < 45 or orientation1 > 315 and orientation2 < 45 or orientation2 > 315 :
-            sleep(12000)
-            orientation3 = compass.heading()
-            if orientation3 < 45 or orientation3 > 315 : 
-                radio.send('Changer la position')
+        gap = abs(orientation2-orientation1)
+        if gap <= 15:
+            radio.send('Endormie')
+        elif gap <= 45:
+            radio.send('Agite')
+        else:
+            radio.send('Tres agite')
+        orientation3 = compass.heading()
+        if orientation3 == 180: 
+            radio.send('Changer la position')
     else : 
         compass.clear_calibration()
-"""
 
 
 # Partie de la veilleuse, avec une certaine luminosité, il faut allumer ou éteindre la veilleuse (Stitch). PS: J'ai juste mis 0 pour l'instant pour dire que c'est sombre, avec des tests je pourrais en savoir plus.
