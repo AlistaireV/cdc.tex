@@ -311,12 +311,12 @@ def calibration():
     compass.calibrate()
     if compass.is_calibrated() == True : 
         orientation1 = compass.heading()
-        sleep(12000)
+        sleep(15000)
         orientation2 = compass.heading()
         gap = abs(orientation2-orientation1)
         if gap <= 15:
             radio.send('Endormie')
-        elif gap <= 45:
+        elif 15 < gap <= 45:
             radio.send('Agite')
         else:
             radio.send('Tres agite')
