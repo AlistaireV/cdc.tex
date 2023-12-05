@@ -204,16 +204,19 @@ def unpack_data(encrypted_packet, key):
     2) Le message en lui-même
     3) La valeur sous forme d'int du hashing que l'on pourra comparer à celle obtenue après décodage 
     """
-    lst_message_00 = [] 
-    lst_message_01 = []
-    lst_message_02 = []
-    lst_message_03 = []
+
+    dictionnary = {}
+    lst = ['00','01','02','03']
+    for element in lst : 
+        dictionnary[element] = [] 
     if type_message == '00' :
         display.scroll('New connexion') #Le type 00 fera d'office référence à une nouvelle connexion
-        if int(content[0]) in lst_message_00 : 
-            display.scroll('ERROR message already received')
-        else :    
-            lst_message_00.append(int(content[0]))
+        for key in dictionnary : 
+            if key == '00' : 
+                if content[0] in dictionnary['00'] : 
+                    display.scroll('ERROR message already received')
+                else : 
+                    dictionnary['00'].append(content[0])
         decrypted_message = vigenere(content[1],key,True) #Here we will decrypt the content of the message
         hashing_value = hashing(decrypted_message)
         if hashing_value != content[2] : 
@@ -223,10 +226,12 @@ def unpack_data(encrypted_packet, key):
 
     elif type_message == '01' :
         display.scroll('Milk count') #Le type 01 fera directement référence au compteur de lait
-        if int(content[0]) in lst_message_01 : 
-            display.scroll('ERROR message already received')
-        else :    
-            lst_message_01.append(int(content[0]))
+        for key in dictionnary : 
+            if key == '01' : 
+                if content[0] in dictionnary['01'] : 
+                    display.scroll('ERROR message already received')
+                else : 
+                    dictionnary['01'].append(content[0])
         decrypted_message= vigenere(content[1],key,True) #Here we will decrypt the content of the message 
         hashing_value = hashing(decrypted_message)
         if hashing_value != content[2] : 
@@ -234,10 +239,12 @@ def unpack_data(encrypted_packet, key):
     
     elif type_message == '02' :
         display.scroll('Temp measure') #Le type 02 fera référence aux mesures de températures en continues
-        if int(content[0]) in lst_message_02 : 
-            display.scroll('ERROR message already received')
-        else :    
-            lst_message_02.append(int(content[0]))
+        for key in dictionnary : 
+            if key == '02' : 
+                if content[0] in dictionnary['02'] : 
+                    display.scroll('ERROR message already received')
+                else : 
+                    dictionnary['02'].append(content[0])
         decrypted_message = vigenere(content[1],key,True) #Here we will decrypt the content of the message
         hashing_value = hashing(decrypted_message)
         if hashing_value != content[2] : 
@@ -245,10 +252,12 @@ def unpack_data(encrypted_packet, key):
 
     elif type_message == '03' :
         display.scroll('Sommeil agité') #Le type 03 devra toujours être relié à la fonction d'éveil du bébé
-        if int(content[0]) in lst_message_03 : 
-            display.scroll('ERROR message already received')
-        else :    
-            lst_message_03.append(int(content[0]))
+        for key in dictionnary : 
+            if key == '03' : 
+                if content[0] in dictionnary['03'] : 
+                    display.scroll('ERROR message already received')
+                else : 
+                    dictionnary['03'].append(content[0])
         decrypted_message = vigenere(content[1],key,True) #Here we will decrypt the content of the message
         hashing_value = hashing(decrypted_message)
         if hashing_value != content[2] : 
@@ -311,7 +320,8 @@ def establish_connexion(key):
     if radio_answer :
         decryption_message = unpack_data(radio_answer,key)
         if int(decryption_message) == answer :
-             display.scroll('Connexion established') 
+             display.scroll('Connexion established')
+             key = key 
 
 def main():
     start()
