@@ -61,37 +61,16 @@ def setting():
             elif SET_COUNT == 3:
                 log_data()
         
-
-            
-
-"""
-Faire une boucle while True : 
-    Mettre une condition, si delay = autant. 
-        Si c'est le cas alors, il faut que le microbit mesure la température et l'envoie au niveau du Be:bi parent uniquement 
-        si la température n'est pas dans le bon range (20°C - 24°C)
-        Une fois que le Be:bi parent reçoit un message il va chanter en mode 'alerte' en fonction de la température reçue avec différents paliers
-        pour éviter de hurler à la mort si la température de la pièce est 19.9°C. Il va falloir mettre une alerte quand on aura dépasser une 
-        température de sécurité. Disons 1°C en-dessous ou au-dessus de chaque limite
-        
-    Si le delay = autant n'est pas respecté alors il faut que le microbit :
-        Puisse recevoir des messages et que à la moindre réception de message = temperature () il fasse :
-            une mesure de la température et qu'il transmette cette température au Be:bi parent
-"""
-
-"""
-Seconde fonctionnalité : Boussole au niveau du microbit qui va permettre de voir si le bébé 
-se trouve sur le dos (Danger lié à la régurgitation de l'enfant). Si le bébé se retrouve sur le dos 
-à deux moments donnés successifs (avec un intervalle de 2 minutes par exemple) alors
-le micorbit enfant va envoyer un message ou une alerte au microbit parent
-"""
 def log_data():
+    #Objectifs : stockage de données récupérables par l'utilisateur
     log.add({
       'Temperature': temperature(),
       'Heure': time_secondes
       'Light': read_light_level()
     })
 
-def temperature_alert() : 
+def temperature_alert() :
+    #Objectifs : Mesure de température 1X/h pour vérifier la température de la pièce du bébé 
     if time_secondes == 3600 :
         time_secondes = 0
         temp_measurement = temperature()
