@@ -275,6 +275,7 @@ def setting(key):
      global SET_COUNT 
      display.show(SET_COUNT)
      while True :
+        # il faudrait ajouter un 'if radio.receive() == "Start Veilleuse"  ou un truc du style
         if button_b.is_pressed():
             SET_COUNT += 1
             display.show(SET_COUNT)
