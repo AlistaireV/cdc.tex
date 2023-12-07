@@ -95,6 +95,39 @@ def unpack_data (encrypted_packed,key) :
                     if int(hashing_value) == int(hashed_value) :  
                         display.scroll("Excellent")
                         return message_decripte_vigenere
+            if clef == '01' : 
+                if nonce in dictionnary['01'] : 
+                    display.scroll('ERROR message already received')
+                else : 
+                    dictionnary['01'].append(nonce)
+                    display.scroll('Message added')
+                    message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
+                    hashing_value = hashing(message_decripte_vigenere)
+                    if str(hashing_value) == hashed_value : 
+                        display.scroll(message_decripte_vigenere)
+                        return message_decripte_vigenere
+            if clef == '02' : 
+                if nonce in dictionnary['02'] : 
+                    display.scroll('ERROR message already received')
+                else : 
+                    dictionnary['02'].append(nonce)
+                    display.scroll('Message added')
+                    message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
+                    hashing_value = hashing(message_decripte_vigenere)
+                    if str(hashing_value) == hashed_value : 
+                        display.scroll(message_decripte_vigenere)
+                        return message_decripte_vigenere
+            if clef == '03' : 
+                if nonce in dictionnary['03'] : 
+                    display.scroll('ERROR message already received')
+                else : 
+                    dictionnary['03'].append(nonce)
+                    display.scroll('Message added')
+                    message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
+                    hashing_value = hashing(message_decripte_vigenere)
+                    if str(hashing_value) == hashed_value : 
+                        display.scroll(message_decripte_vigenere)
+                        return message_decripte_vigenere
 
 
 def calculate_challenge (challenge) : 
