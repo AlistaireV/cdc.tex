@@ -96,7 +96,8 @@ def menu():
         if button_a.was_pressed() : 
             setting()
         if button_b.was_pressed():
-             establish_connexion("singe")
+             establish_connexion(type_mess="00",key) # revoir avc le back end de alistaire 
+		#133
 
 def setting():
      """Cette fonction permet de faire un choix de la fonnction 
