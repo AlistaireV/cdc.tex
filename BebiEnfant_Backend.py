@@ -78,7 +78,7 @@ def unpack_data (encrypted_packed,key) :
     decryption_message = encrypted_packed.split('|')
     message_en_clair = decryption_message[2].split(':')
     encrypted_packet = tuple(message_en_clair)
-    nonce,content,hashed_value = encrypted_packet
+    nonce,content = encrypted_packet
     dictionnary = {}
     lst = ['00','01','02','03']
     for element in lst : 
@@ -90,11 +90,9 @@ def unpack_data (encrypted_packed,key) :
                     display.scroll('ERROR message already received')
                 else : 
                     dictionnary['00'].append(nonce)
+                    display.scroll('Message added')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    hashing_value = hashing(message_decripte_vigenere)
-                    if int(hashing_value) == int(hashed_value) :  
-                        display.scroll("Excellent")
-                        return message_decripte_vigenere
+                    return message_decripte_vigenere 
             if clef == '01' : 
                 if nonce in dictionnary['01'] : 
                     display.scroll('ERROR message already received')
@@ -102,10 +100,7 @@ def unpack_data (encrypted_packed,key) :
                     dictionnary['01'].append(nonce)
                     display.scroll('Message added')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    hashing_value = hashing(message_decripte_vigenere)
-                    if str(hashing_value) == hashed_value : 
-                        display.scroll(message_decripte_vigenere)
-                        return message_decripte_vigenere
+                    return message_decripte_vigenere
             if clef == '02' : 
                 if nonce in dictionnary['02'] : 
                     display.scroll('ERROR message already received')
@@ -113,10 +108,8 @@ def unpack_data (encrypted_packed,key) :
                     dictionnary['02'].append(nonce)
                     display.scroll('Message added')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    hashing_value = hashing(message_decripte_vigenere)
-                    if str(hashing_value) == hashed_value : 
-                        display.scroll(message_decripte_vigenere)
-                        return message_decripte_vigenere
+                    return message_decripte_vigenere
+                    
             if clef == '03' : 
                 if nonce in dictionnary['03'] : 
                     display.scroll('ERROR message already received')
@@ -124,36 +117,47 @@ def unpack_data (encrypted_packed,key) :
                     dictionnary['03'].append(nonce)
                     display.scroll('Message added')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    hashing_value = hashing(message_decripte_vigenere)
-                    if str(hashing_value) == hashed_value : 
-                        display.scroll(message_decripte_vigenere)
-                        return message_decripte_vigenere
+                    return message_decripte_vigenere
 
+def establish_connexion(key): 
+    global nbre_alea 
+    global content
+    if button_b.was_pressed() :
+        display.scroll("Connexion ...")
+        content= random.randrange(5000)
+        nbre_alea = random.randrange(5000)
+        nbre_alea_crypted = vigenere(nbre_alea,key)
+        message_a_decrypter = vigenere(content,key)
+        encrypted_message = nbre_alea_crypted + ':' + message_a_decrypter
+        len_message = len(encrypted_message)
+        radio_send = '{0}|{1}|{2}'.format('00',str(len_message),encrypted_message)
+        radio.send(radio_send)
+        return 
 
-def calculate_challenge (challenge) : 
-    return int(challenge)*5
-
-def send_packet(type_message,contenu,key): 
-    display.scroll(contenu,300)
+def send_message (type_message,contenu,key): 
     contenu_vigenered = vigenere(contenu,key)
     nbre_aleatoire = random.randrange(5000)
-    encrypted_message = str(nbre_aleatoire) + ':' + contenu_vigenered + ':' +str(hashing(str(contenu)))
+    encrypted_message = str(nbre_aleatoire) + ':' + contenu_vigenered
     long_message = len(encrypted_message)
     radio_send = '{0}|{1}|{2}'.format(type_message,str(long_message),encrypted_message)
     display.scroll(radio_send,300)
     radio.send(radio_send)
 
-def establishment_connexion (message) :
+def calcul_response (message) :
     global key
+    global content
     if message : 
-            message_code = unpack_data(message,key)
-            response_challenge = calculate_challenge(message_code)
-            display.scroll(response_challenge,300)
-            send_packet("00",response_challenge,key)
+        message_deballe = unpack_data(message,key)
+        answer_challenge = content *5
+        hashing_value_challenge = hashing(str(answer_challenge)) 
+        if message_deballe == str(hashing_value_challenge) :
+            display.scroll("Clef authentifiée")
+            key += str(answer_challenge)
+            display.scroll(key)
         
 display.scroll('Welcome')
-if __name__ == '__main__' : 
+if __name__ == '__main__' :
     while True : 
         message = radio.receive()
-        establishment_connexion(message)
-        
+        response = establish_connexion(key)
+        calcul_response(message)
