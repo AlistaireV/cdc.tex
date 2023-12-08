@@ -7,6 +7,10 @@ radio.config(group=23)
 radio.on()
 
 key = "Betag"
+dictionnary = {}
+lst = ['00','01','02','03']
+for element in lst : 
+    dictionnary[element] = []
 
 def hashing(string):
 	"""
@@ -75,27 +79,22 @@ def vigenere(message, key, decryption=False):
 
 
 def unpack_data (encrypted_packed,key) : 
+    global dictionnary
     decryption_message = encrypted_packed.split('|')
     message_en_clair = decryption_message[2].split(':')
     encrypted_packet = tuple(message_en_clair)
-    nonce,content,hashed_value = encrypted_packet
-    dictionnary = {}
-    lst = ['00','01','02','03']
-    for element in lst : 
-        dictionnary[element] = [] 
+    nonce,content = encrypted_packet
     if decryption_message[0] == '00' :
         for clef in dictionnary : 
-            if clef == '00' : 
-                if nonce in dictionnary['00'] : 
+            if clef == '00' :
+                nonce_decrypted = vigenere(nonce,key) 
+                if nonce_decrypted in dictionnary['00'] : 
                     display.scroll('ERROR message already received')
                 else : 
-                    dictionnary['00'].append(nonce)
-                    display.scroll('Message added')
+                    dictionnary['00'].append(nonce_decrypted)
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    hashing_value = hashing(message_decripte_vigenere)
-                    if str(hashing_value) == hashed_value : 
-                        display.scroll(message_decripte_vigenere)
-                        return message_decripte_vigenere 
+                    return message_decripte_vigenere
+                
             if clef == '01' : 
                 if nonce in dictionnary['01'] : 
                     display.scroll('ERROR message already received')
@@ -104,9 +103,8 @@ def unpack_data (encrypted_packed,key) :
                     display.scroll('Message added')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
                     hashing_value = hashing(message_decripte_vigenere)
-                    if str(hashing_value) == hashed_value : 
-                        display.scroll(message_decripte_vigenere)
-                        return message_decripte_vigenere
+                    return message_decripte_vigenere
+                    
             if clef == '02' : 
                 if nonce in dictionnary['02'] : 
                     display.scroll('ERROR message already received')
@@ -114,10 +112,7 @@ def unpack_data (encrypted_packed,key) :
                     dictionnary['02'].append(nonce)
                     display.scroll('Message added')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    hashing_value = hashing(message_decripte_vigenere)
-                    if str(hashing_value) == hashed_value : 
-                        display.scroll(message_decripte_vigenere)
-                        return message_decripte_vigenere
+                    return message_decripte_vigenere
             if clef == '03' : 
                 if nonce in dictionnary['03'] : 
                     display.scroll('ERROR message already received')
@@ -125,49 +120,33 @@ def unpack_data (encrypted_packed,key) :
                     dictionnary['03'].append(nonce)
                     display.scroll('Message added')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    hashing_value = hashing(message_decripte_vigenere)
-                    if str(hashing_value) == hashed_value : 
-                        display.scroll(message_decripte_vigenere)
-                        return message_decripte_vigenere
+                    return message_decripte_vigenere
 
-def establish_connexion(key): 
-    global nbre_alea 
-    global content
-    if button_a.was_pressed() : 
-        display.scroll("Connexion ...")
-        content= random.randrange(5000)
-        nbre_alea = random.randrange(5000)
-        message_a_decrypter = vigenere(content,key)
-        encrypted_message = str(nbre_alea) + ':' + message_a_decrypter + ':' +str(hashing(str(content)))
-        type_mess = '00'
-        len_message = len(encrypted_message)
-        radio_send = '{0}|{1}|{2}'.format(type_mess,str(len_message),encrypted_message)
-        radio.send(radio_send)
-        return 
 
-def send_message (type_message,contenu,key): 
+def calculate_challenge (challenge) : 
+    return int(challenge)*5
+
+def send_packet(type_message,contenu,key): 
+    display.scroll(contenu,300)
     contenu_vigenered = vigenere(contenu,key)
     nbre_aleatoire = random.randrange(5000)
-    encrypted_message = str(nbre_aleatoire) + ':' + contenu_vigenered + ':' +str(hashing(str(contenu)))
+    encrypted_message = str(nbre_aleatoire) + ':' + contenu_vigenered
     long_message = len(encrypted_message)
     radio_send = '{0}|{1}|{2}'.format(type_message,str(long_message),encrypted_message)
     display.scroll(radio_send,300)
     radio.send(radio_send)
 
-def calcul_response (message) :
+def establishment_connexion (message) :
     global key
-    global content
     if message : 
-        message_deballe = unpack_data(message,key)
-        answer_challenge = content *5 
-        if message_deballe == str(answer_challenge) :
-            display.scroll("Clef authentifiée")
-            key += str(answer_challenge)
-            display.scroll(key)
+        message_code = unpack_data(message,key)
+        response_challenge = calculate_challenge(message_code)
+        valeur_hashing_response = hashing(str(response_challenge))
+        send_packet("00",valeur_hashing_response,key)
+        key += str(response_challenge)
         
 display.scroll('Welcome')
 if __name__ == '__main__' :
     while True : 
         message = radio.receive()
-        response = establish_connexion(key)
-        calcul_response(message)
+        establishment_connexion(message)
