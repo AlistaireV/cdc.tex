@@ -26,7 +26,6 @@ liens et mettre en commun nos connaissances. Nous avons pu prendre connaissance 
 Notre groupe a été recrutée au service d’aide à l’enfance de l’état belge afin de pouvoir suivre l’état d’éveil du bébé et de la quantité de lait consommé par celui-ci. Il nous est demandé de créer un outil permettant de gérer ces fonctions pour permettre l’amélioration de la santé du bébé. Cet outil permettra de communiquer l’état d’éveil du bébé d’un be\string:bi à l’autre et d’enregistrer la quantité de lait consommé pendant la journée. Finalement, ces 2 be\string:bi doivent être capable d’être dans un même canal et de garder leurs messages de façon sécurisés.
 
 \newpage
-
 \section{Fonctionnement du BEtag}
 Voici le fonctionnement de notre be\string:bi\string:
 \\ Tout d’abord, nous allumons les 2 be\string:bi (parent et enfant) et nous établissons la connexion en interagissant avec l’UI en appuyant sur le bouton B. Nous permettons cette connexion entre ces deux be\string:bi via un mot de passe ‘Betag’ en commun qui permettra de garder la connexion entre ces deux-là et empêcher aux autres d’avoir accès sur le réseau radio. Le key qui permet de garder la connexion entre ces 2 be\string:bi est créé de la façon suivante\string:
@@ -47,28 +46,29 @@ be\string:bi parent choisit un mot de passe (P) qui sera crypté en Vigenère av
 \begin{itemize}
     \item[\textbullet] Si l'on appuie sur A, le compteur diminue d'une unité.
     \item[\textbullet] Si l'on appuie sur B, le compteur augmente d'une unité.
-    \item[\textbullet] Si l'on appuie sur le logo, le compteur se réinitialise à 0.
+    \item[\textbullet] Si l'on appuie sur le logo, on sélectionne la fonction selon le type donné.
     \item[\textbullet] Si l'on secoue le be\string:bi, elle retourne au menu principal (pour éventuellement rétablir la connexion à nouveau).
 \end{itemize}
 
 \noindent On a mis en place un dictionnaire dans lequel ou pourra ajouter le type en string '00' lorsque l'on choisit et si le type est déjà dans le dictionnaire alors il affichera un message d'erreur. Le compteur définit le type de la fonction\string:
 \begin{itemize}
-    \item[\textbullet]  Type == 00 : Établir la connexion
+    \item[\textbullet] Type == 00 : Établir la connexion
     \item[\textbullet] Type == 01 : Compteur de lait
     \item[\textbullet] Type == 02 : Température mesurée
     \item[\textbullet] Type == 03 : État d'éveil
     \item[\textbullet] Type == 04 : Contrôle de la veilleuse
 \end{itemize}
-
+\newpage
 \noindent Fonctionnement plus détaillé des fonctions:
 \begin{enumerate}
-    \item Compteur de lait\string:
-    \item Température mesurée\string:
-    \item État d'éveil\string:
-    \item Contrôle de la veilleuse\string:
+    \item \textbf{Compteur de lait\string:} Sur le be\string:bi parent, le bouton A permet de retirer une unité tandis que le bouton B permet d'ajouter une unité au nombre de biberon. Si on secoue le be\string:bi alors il se réinitialise à 0 sinon en appuyant sur le logo, il retourne au menu.
+    \item \textbf{Température mesurée\string:} Sur le be\string:bi enfant, c'est le type 01 qui doit être sélectionné en appuyant le logo. Il envoie le message 'Need heat' au be\string:bi parent si la température <= 19°C. 
+    \\Si la température >= 25°C alors il envoie le message 'Need cold'. Sinon, il ne renvoie pas de message.
+    \item \textbf{État d'éveil\string:} Sur le be\string:bi enfant, c'est le type 00 et on le sélectionne en appuyant sur le logo. Une première orientation se fait puis une deuxième après 15s. Ensuite, la valeur absolue de ces deux valeurs sont soustraites pour avoir un écart (gap). Si gap <= 15° alors le bébé est endormi. 
+    \\Si 15° < gap <= 45° alors le bébé est agité sinon il est très agité. En cas de danger où le bébé se trouve à 180°, un messager d'urgence est envoyé pour une intervention immédiate.
+    \item \textbf{Contrôle de la veilleuse\string:} Sur le be\string:bi enfant, c'est le type 02 qui doit être sélectionné en appuyant sur le logo. Si light <= 50 alors il faut activer la veilleuse, si 50 < light <= 90 alors la veilleuse est en mode repos sinon il faut éteindre la veilleuse.
 \end{enumerate}
 \section{Conclusion}
-Dire qu'on a fait les fonctionnalités de base + implémenter des fonctions supplémentaires.
-
+Pour conclure, notre projet BEtag a connu un grand succès pour ses fonctions de base qui sont l'établissement de connexion entre 2 be\string:bi, le compteur de lait, l'état d'éveil et la détection de mouvements du nourrisson. Nous avons aussi implémenter la fonction de la veilleuse en fonction de la luminosité et la température de la chambre du bébé. Finalement, ce flux de données est crypté et sécurisé.
 
 \end{document}
