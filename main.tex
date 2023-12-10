@@ -5,7 +5,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[french]{babel}
 
-\title{Projet: BEtag}
+\title{\textbf{Projet: BEtag}}
 \author{Noah Moussaoui, Alistaire Vionne, Kaan Akman}
 \date{8 Décembre 2023}
 
@@ -23,24 +23,52 @@ engagés à travailler sur un projet qui visait, dans un premier temps, à trava
 liens et mettre en commun nos connaissances. Nous avons pu prendre connaissance sur l'UI (User Interface), la cryptographie et les appliquer.
 
 \section{Contexte}
-Notre groupe a été recrutée au service d’aide à l’enfance de l’état belge afin de pouvoir suivre l’état d’éveil du bébé et de la quantité de lait consommé par celui-ci. Il nous est demandé de créer un outil permettant de gérer ces fonctions pour permettre l’amélioration de la santé du bébé. Cet outil permettra de communiquer l’état d’éveil du bébé d’un be\string:bi à l’autre et d’enregistrer la quantité de lait consommé pendant la journée. Finalement, ces 2 be\string:bi doivent être capable d’être dans un même canal et de garder ces messages de façon sécurisés.
+Notre groupe a été recrutée au service d’aide à l’enfance de l’état belge afin de pouvoir suivre l’état d’éveil du bébé et de la quantité de lait consommé par celui-ci. Il nous est demandé de créer un outil permettant de gérer ces fonctions pour permettre l’amélioration de la santé du bébé. Cet outil permettra de communiquer l’état d’éveil du bébé d’un be\string:bi à l’autre et d’enregistrer la quantité de lait consommé pendant la journée. Finalement, ces 2 be\string:bi doivent être capable d’être dans un même canal et de garder leurs messages de façon sécurisés.
+
 \newpage
+
 \section{Fonctionnement du BEtag}
-\noindent Voici le fonctionnement de notre be\string:bi:
+Voici le fonctionnement de notre be\string:bi\string:
+\\ Tout d’abord, nous allumons les 2 be\string:bi (parent et enfant) et nous établissons la connexion en interagissant avec l’UI en appuyant sur le bouton B. Nous permettons cette connexion entre ces deux be\string:bi via un mot de passe ‘Betag’ en commun qui permettra de garder la connexion entre ces deux-là et empêcher aux autres d’avoir accès sur le réseau radio. Le key qui permet de garder la connexion entre ces 2 be\string:bi est créé de la façon suivante\string:
+be\string:bi parent choisit un mot de passe (P) qui sera crypté en Vigenère avec un générateur de nombre aléatoire (A) sous ce format\string: Type | Longueur | Nonce : Message
+\\
+\\ Ensuite, P sera décrypté par le be\string:bi enfant qui va utiliser une fonction déterministe F pour calculer le challenge F(A). Ce F(A), dans notre code, sera mis en ‘string’ et finalement subira un hashing.
+\noindent Ce hashing sera ensuite rapporté au be\string:bi parent, entre-temps le be\string:bi parent aura fait un hashing aussi pour le calcul de F(A). Finalement, ce be\string:bi parent compare le hashing du be\string:bi parent et du be\string:bi bébé. Si ces deux hashing sont identiques, alors elle définit un key commun avec le be\string:bi bébé.
+\\
+\\
+\noindent Après avoir établi la connexion entre les 2 be\string:bi avec un même key, nous allons pouvoir intéragir avec le menu intéractif du be\string:bi parent. Il y a de telles fonctions comme:
 \begin{enumerate}
-    \item Tout d’abord, nous allumons les 2 be\string:bi (parent et enfant) et nous établissons la connexion entre ces 2 be\string:bi via un key (‘Betag’) commun qui permettra de garder la connexion entre-nous et empêcher à des tiers d’y avoir accès à notre réseau radio. Ce key est créé de la façon suivante:
-be\string:bi Parent choisit un mot de passe (P) qui sera crypté en Vigenère avec un générateur de nombre aléatoire (A). Le format de notre message est la suivante: .Ensuite, P sera décrypté par le be\string:bi Enfant qui va ensuite utiliser une fonction déterministe F pour calculer F(A). Ce F(A), dans notre code, sera mis en ‘string’ et finalement subira un hashing.
-    
-\noindent Ce hashing sera ensuite rapporté au be\string:bi parent, entre-temps le be:bi parent aura fait un hashing aussi pour le calcul de F(A). Finalement, ce be:bi parent compare le hashing du be\string:bi parent et du be\string:bi bébé. Si ces deux hashing sont identiques, alors elle définit un key commun avec le be\string:bi bébé.
-
-#Ajouter les points forts et contraintes aussi
-    
-    \item Après avoir établi la connexion entre les 2 be\string:bi avec un même key, nous allons pouvoir intéragir avec le menu intéractif du be\string:bi parent.
-
+\item Le compteur de biberon
+\item L’état d’éveil du nourrisson
+\item La température de la chambre
+\item Le contrôle de la veilleuse
 \end{enumerate}
+\noindent En appuyant sur le bouton A, une liste de fonctions peut être sélectionnée avec une certaine manière. Un compteur est initialisé à 0:
+\begin{itemize}
+    \item[\textbullet] Si l'on appuie sur A, le compteur diminue d'une unité.
+    \item[\textbullet] Si l'on appuie sur B, le compteur augmente d'une unité.
+    \item[\textbullet] Si l'on appuie sur le logo, le compteur se réinitialise à 0.
+    \item[\textbullet] Si l'on secoue le be\string:bi, elle retourne au menu principal (pour éventuellement rétablir la connexion à nouveau).
+\end{itemize}
 
+\noindent On a mis en place un dictionnaire dans lequel ou pourra ajouter le type en string '00' lorsque l'on choisit et si le type est déjà dans le dictionnaire alors il affichera un message d'erreur. Le compteur définit le type de la fonction\string:
+\begin{itemize}
+    \item[\textbullet]  Type == 00 : Établir la connexion
+    \item[\textbullet] Type == 01 : Compteur de lait
+    \item[\textbullet] Type == 02 : Température mesurée
+    \item[\textbullet] Type == 03 : État d'éveil
+    \item[\textbullet] Type == 04 : Contrôle de la veilleuse
+\end{itemize}
+
+\noindent Fonctionnement plus détaillé des fonctions:
+\begin{enumerate}
+    \item Compteur de lait\string:
+    \item Température mesurée\string:
+    \item État d'éveil\string:
+    \item Contrôle de la veilleuse\string:
+\end{enumerate}
 \section{Conclusion}
-# Dire qu'on a fait les fonctionnalités de base + implémenter des fonctions supp
+Dire qu'on a fait les fonctionnalités de base + implémenter des fonctions supplémentaires.
 
 
 \end{document}
