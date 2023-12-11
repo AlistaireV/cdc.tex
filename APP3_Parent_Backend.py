@@ -33,15 +33,19 @@ def menu():
         return message
 
 def setting():
-     """Cette fonction permet de faire un choix de la fonnction 
-        Cette fonction permet de faire un choix entre toutes le fonctions du tag 
-        pré: un appel grace au button du menu 
-        post: affiche des chiffres pour sélectionner la fonctionalité 
+    """Cette fonction permet de faire un choix de la fonction 
+    Cette fonction permet de faire un choix entre toutes les fonctions du tag 
+    pré: un appel grâce au bouton du menu 
+    post: affiche des chiffres pour sélectionner la fonctionnalité 
     """
-     display.scroll(" choose your function ") 
-     global SET_COUNT 
-     display.show(SET_COUNT)
-     while True :
+    display.scroll(" choose your function ") 
+    global SET_COUNT 
+    display.show(SET_COUNT)
+    while True:
+        if SET_COUNT <= -1:
+            SET_COUNT = 0
+            display.show(SET_COUNT)
+            sleep(500)
         if button_b.is_pressed():
             SET_COUNT += 1
             display.show(SET_COUNT)
@@ -52,9 +56,14 @@ def setting():
             sleep(500)
         if accelerometer.was_gesture('shake'):
             menu()
+            pass
         if pin_logo.is_touched():
             if SET_COUNT == 1:
                 milk()
+                pass
+
+if __name__ == '__main__':
+    setting()
      
 def milk():
     """Cette fonction permet de compter la dose de lait donnée au bébé
