@@ -14,7 +14,7 @@ for element in lst :
 
 MILK_COUNT = 0
 SET_COUNT=0
-
+content = 0
 
 def menu():
     """ Cette fonction et l interface menu 
@@ -149,6 +149,7 @@ def vigenere(message, key, decryption=False):
 
 
 def unpack_data (encrypted_packed,key) : 
+    global content
     decryption_message = encrypted_packed.split('|')
     message_en_clair = decryption_message[2].split(':')
     encrypted_packet = tuple(message_en_clair)
