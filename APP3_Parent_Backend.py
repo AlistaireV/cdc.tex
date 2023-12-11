@@ -57,7 +57,7 @@ def setting():
         if accelerometer.was_gesture('shake'):
             menu()
             pass
-        if pin_logo.was_touched():
+        if pin_logo.is_touched():
             if SET_COUNT == 1:
                 milk()
                 pass
@@ -90,7 +90,7 @@ def milk():
             MILK_COUNT = 0
             display.show(MILK_COUNT)  # je fais un test
             sleep(500)
-        if pin_logo.was_touched():
+        if pin_logo.is_touched():
             menu()
 
 def hashing(string):
