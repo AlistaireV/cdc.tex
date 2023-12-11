@@ -46,18 +46,18 @@ def setting():
             SET_COUNT = 0
             display.show(SET_COUNT)
             sleep(500)
-        if button_b.is_pressed():
+        if button_b.was_pressed():
             SET_COUNT += 1
             display.show(SET_COUNT)
             sleep(500)
-        if button_a.is_pressed():
+        if button_a.was_pressed():
             SET_COUNT -= 1
             display.show(SET_COUNT)
             sleep(500)
         if accelerometer.was_gesture('shake'):
             menu()
             pass
-        if pin_logo.is_touched():
+        if pin_logo.was_touched():
             if SET_COUNT == 1:
                 milk()
                 pass
@@ -80,11 +80,11 @@ def milk():
             MILK_COUNT = 0
             display.show(MILK_COUNT)
             sleep(500)
-        if button_b.is_pressed():
+        if button_b.was_pressed():
             MILK_COUNT += 1
             display.show(MILK_COUNT)
             sleep(500)
-        if button_a.is_pressed():
+        if button_a.was_pressed():
             MILK_COUNT -= 1
             display.show(MILK_COUNT)
             sleep(500)
@@ -92,7 +92,7 @@ def milk():
             MILK_COUNT = 0
             display.show(MILK_COUNT)  # je fais un test
             sleep(500)
-        if pin_logo.is_touched():
+        if pin_logo.was_touched():
             menu()
 
 def hashing(string):
