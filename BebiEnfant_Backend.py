@@ -7,6 +7,11 @@ radio.config(group=23)
 radio.on()
 
 key = "Betag"
+key = "Betag"
+dictionnary = {}
+lst = ['00','01','02','03']
+for element in lst : 
+    dictionnary[element] = []
 
 def hashing(string):
 	"""
@@ -43,6 +48,76 @@ def hashing(string):
 		return str(x)
 	return ""
 
+MILK_COUNT = 0
+SET_COUNT=0
+
+
+def menu():
+    """ Cette fonction et l interface menu 
+        Cette fonction permet d avoir un menu avec une image et d'acceder aux différentes fonctions du BEtag
+        pré: start ()
+        post: affiche une image de menu et donne accès à tous les commande possible
+    """
+    while True:
+        display.show(Image.DUCK)
+        message_recu = radio.receive()
+        if message_recu : 
+            unpack_data(message_recu,key)
+        elif button_a.was_pressed() : 
+            setting()
+            
+        veilleuse(key)
+
+        
+def setting():
+     """Cette fonction permet de faire un choix de la fonnction 
+        Cette fonction permet de faire un choix entre toutes le fonctions du tag 
+        pré: un appel grace au button du menu 
+        post: affiche des chiffres pour sélectionner la fonctionalité 
+    """
+     display.scroll(" choose your function ") 
+     global SET_COUNT 
+     display.show(SET_COUNT)
+     while True :
+        if button_b.is_pressed():
+            SET_COUNT += 1
+            display.show(SET_COUNT)
+        if button_a.is_pressed():
+            SET_COUNT -= 1
+            display.show(SET_COUNT)
+        if accelerometer.was_gesture('shake'):
+            menu()
+        if pin_logo.is_touched():
+            if SET_COUNT == 1:
+                milk()
+     
+def milk():
+    """ Cette fonction permet de compter la dose de lait donner au bébé 
+        Cette fonction permet de compter la dose de lait donner au bébé et l'envoyer au BEtag bébé
+    pré: le button a doit etre préssé dans le menu pour activer la fonction
+    post: affiche le compteur de dose de lait et l'envoit au BEtag enfant
+    """
+    global MILK_COUNT
+    display.scroll("Milk")
+    display.show(MILK_COUNT)
+    while True:
+        if button_b.is_pressed():
+            MILK_COUNT += 1
+            display.show(MILK_COUNT)
+            sleep(500)
+        if button_a.is_pressed():
+            MILK_COUNT -= 1
+            display.show(MILK_COUNT)
+            sleep(500)
+        if accelerometer.was_gesture('shake'):
+            MILK_COUNT = 0
+            display.show(MILK_COUNT) #je fais un test
+            
+            sleep(500)
+        if pin_logo.is_touched():
+            send_packet('01',MILK_COUNT,key)
+            menu()
+
 def vigenere(message, key, decryption=False):
     text = ""
     key_length = len(key)
@@ -75,89 +150,146 @@ def vigenere(message, key, decryption=False):
 
 
 def unpack_data (encrypted_packed,key) : 
+    global dictionnary
     decryption_message = encrypted_packed.split('|')
     message_en_clair = decryption_message[2].split(':')
     encrypted_packet = tuple(message_en_clair)
     nonce,content = encrypted_packet
-    dictionnary = {}
-    lst = ['00','01','02','03']
-    for element in lst : 
-        dictionnary[element] = [] 
     if decryption_message[0] == '00' :
         for clef in dictionnary : 
-            if clef == '00' : 
-                if nonce in dictionnary['00'] : 
+            if clef == '00' :
+                nonce_decrypted = vigenere(nonce,key) 
+                if nonce_decrypted in dictionnary['00'] : 
                     display.scroll('ERROR message already received')
                 else : 
-                    dictionnary['00'].append(nonce)
-                    display.scroll('Message added')
+                    dictionnary['00'].append(nonce_decrypted)
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    return message_decripte_vigenere 
-            if clef == '01' : 
-                if nonce in dictionnary['01'] : 
-                    display.scroll('ERROR message already received')
-                else : 
-                    dictionnary['01'].append(nonce)
-                    display.scroll('Message added')
-                    message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
+                    response_challenge = calculate_challenge(message_decripte_vigenere)
+                    valeur_hashing_response = hashing(str(response_challenge))
+                    send_packet("00",valeur_hashing_response,key)
+                    key += str(response_challenge)
                     return message_decripte_vigenere
-            if clef == '02' : 
-                if nonce in dictionnary['02'] : 
+                
+            if clef == '01' : #MILK_COUNT
+                nonce_decrypted = vigenere(nonce,key) 
+                if nonce_decrypted in dictionnary['01'] : 
                     display.scroll('ERROR message already received')
                 else : 
-                    dictionnary['02'].append(nonce)
+                    dictionnary['01'].append(nonce_decrypted)
                     display.scroll('Message added')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
+                    hashing_value = hashing(message_decripte_vigenere)
                     return message_decripte_vigenere
                     
-            if clef == '03' : 
-                if nonce in dictionnary['03'] : 
+            if clef == '02' : 
+                nonce_decrypted = vigenere(nonce,key) 
+                if nonce_decrypted in dictionnary['02'] : 
                     display.scroll('ERROR message already received')
                 else : 
-                    dictionnary['03'].append(nonce)
+                    dictionnary['02'].append(nonce_decrypted)
+                    display.scroll('Message added')
+                    message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
+                    return message_decripte_vigenere
+            if clef == '03' :
+                nonce_decrypted = vigenere(nonce,key) 
+                if nonce_decrypted in dictionnary['03'] : 
+                    display.scroll('ERROR message already received')
+                else : 
+                    dictionnary['03'].append(nonce_decrypted)
                     display.scroll('Message added')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
                     return message_decripte_vigenere
 
-def establish_connexion(key): 
-    global nbre_alea 
-    global content
-    if button_b.was_pressed() :
-        display.scroll("Connexion ...")
-        content= random.randrange(5000)
-        nbre_alea = random.randrange(5000)
-        nbre_alea_crypted = vigenere(nbre_alea,key)
-        message_a_decrypter = vigenere(content,key)
-        encrypted_message = nbre_alea_crypted + ':' + message_a_decrypter
-        len_message = len(encrypted_message)
-        radio_send = '{0}|{1}|{2}'.format('00',str(len_message),encrypted_message)
-        radio.send(radio_send)
-        return 
 
-def send_message (type_message,contenu,key): 
+def calculate_challenge (challenge) : 
+    return int(challenge)*5
+
+def send_packet(type_message,contenu,key): 
     contenu_vigenered = vigenere(contenu,key)
     nbre_aleatoire = random.randrange(5000)
-    encrypted_message = str(nbre_aleatoire) + ':' + contenu_vigenered
+    nbre_aleatoire_vigenered = vigenere(nbre_aleatoire,key)
+    encrypted_message = nbre_aleatoire_vigenered + ':' + contenu_vigenered
     long_message = len(encrypted_message)
     radio_send = '{0}|{1}|{2}'.format(type_message,str(long_message),encrypted_message)
     display.scroll(radio_send,300)
     radio.send(radio_send)
 
-def calcul_response (message) :
-    global key
-    global content
-    if message : 
-        message_deballe = unpack_data(message,key)
-        answer_challenge = content *5
-        hashing_value_challenge = hashing(str(answer_challenge)) 
-        if message_deballe == str(hashing_value_challenge) :
-            display.scroll("Clef authentifiée")
-            key += str(answer_challenge)
-            display.scroll(key)
+
+def veilleuse (key) : 
+    """
+    @Pre : Doit recevoir une commande de la part du BeTag parent qui lui dit que le bébé a été mis au lit
+           Si elle reçoit un 'start_veilleuse' elle doit rester allumer tant que la lumière n'est pas 
+           au-delà de 80. 
+           Dès que la lumière est-au delà de 80 la veilleuse s'éteint
+    @Post : Doit s'allumer à partir d'une certaine luminosité 
+            Doit s'éteindre dès que la luminosité est assez importante 
+    """
+    light_level = display.read_light_level()
+    
+    if light_level <= 50:
+        display.show(Image(
+        "99999:"
+        "99999:"
+        "99999:"
+        "99999:"
+        "99999"))
+        temperature_measurement(key)
+            
+    elif 50 > light_level <= 90 :
+        """
+        Il faudra vérifier une luminosité qui empêche les bébés de dormir
+        """
+        display.scroll('Deactivate Stitch',100)
+        display.show(Image.DUCK)
+        temperature_measurement(key)
+
+def temperature_measurement (key,type='02') : 
+    """
+    Cette fonctionnalité pourrait être intéressante dans la fonctionnalité de mesure de luminosité 
+    car c'est pendant que le bébé dort que la température est le paramètre important à surveiller
+    MAIS 
+    Il faut une récurrence de mesure 
+    @Pre : Ne s'active que lorsque le bébé est en phase de dodo
+    @Post : Va mesurer la température et utiliser le codage selon Vigenere pour envoyer des données
+    au BeTag parent 
+    """
+    measure_temperature = temperature()
+    if measure_temperature <= 19 :
+        send_packet(key, type, str(measure_temperature)+'- Need heat') #Utilisation def send_packet pour envoie
+        #de données cryptées 
+    elif measure_temperature >= 25 :
+        send_packet(key, type, str(measure_temperature)+'- Need cold') #Utilisation def send_packet pour envoie
+        #de données cryptées
+
+def calibration(key,type='03'):
+    display.scroll(compass.heading())
+    compass.calibrate()
+    if compass.is_calibrated() == True : 
+        orientation1 = compass.heading()
+        sleep(15000)
+        orientation2 = compass.heading()
+        gap = abs(orientation2-orientation1)
+        if gap <= 15:
+            send_packet(type,'Endormie',key)
+        elif 15 < gap <= 45:
+            send_packet(type,'Agite',key)
+        else:
+            send_packet(type,'Tres agite',key)
+        orientation3 = compass.heading()
+        if orientation3 == 180: 
+            send_packet(type,'Changer la position',key)
+    else : 
+        compass.clear_calibration()
+
+def agitation_bebe (key,type='03') : 
+    noise_level = microphone.sound_level()
+    if 45 < noise_level < 60: 
+        send_packet(type,'Bebe peut etre reveille',key)
+    elif noise_level > 60 : 
+        send_packet(type,'Bebe reveille',key)
+
         
 display.scroll('Welcome')
 if __name__ == '__main__' :
-    while True : 
-        message = radio.receive()
-        response = establish_connexion(key)
-        calcul_response(message)
+    menu()
+    
