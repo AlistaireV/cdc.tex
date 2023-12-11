@@ -67,7 +67,6 @@ def menu():
             setting()
             
         veilleuse(key)
-
         
 def setting():
      """Cette fonction permet de faire un choix de la fonnction 
@@ -234,14 +233,15 @@ def veilleuse (key) :
         "99999:"
         "99999"))
         temperature_measurement(key)
+        agitation_bebe(key)
             
     elif 50 > light_level <= 90 :
         """
         Il faudra vérifier une luminosité qui empêche les bébés de dormir
         """
-        display.scroll('Deactivate Stitch',100)
-        display.show(Image.DUCK)
+
         temperature_measurement(key)
+        agitation_bebe(key)
 
 def temperature_measurement (key,type='02') : 
     """
@@ -284,7 +284,7 @@ def calibration(key,type='03'):
 def agitation_bebe (key,type='03') : 
     noise_level = microphone.sound_level()
     if 45 < noise_level < 60: 
-        send_packet(type,'Bebe peut etre reveille',key)
+        send_packet(type,'Bebe peut etre reveille et agite',key)
     elif noise_level > 60 : 
         send_packet(type,'Bebe reveille',key)
 
