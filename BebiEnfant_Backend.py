@@ -58,15 +58,17 @@ def menu():
         pré: start ()
         post: affiche une image de menu et donne accès à tous les commande possible
     """
+    global MILK_COUNT
     while True:
-        display.show(Image.DUCK)
+        veilleuse(key)
+	radio.receive()
         message_recu = radio.receive()
         if message_recu : 
             unpack_data(message_recu,key)
         elif button_a.was_pressed() : 
-            setting()
+            display.scroll(MILK_COUNT)
             
-        veilleuse(key)
+        
         
 def setting():
      """Cette fonction permet de faire un choix de la fonnction 
@@ -78,44 +80,23 @@ def setting():
      global SET_COUNT 
      display.show(SET_COUNT)
      while True :
-        if button_b.is_pressed():
+	if SET_COUNT <=0
+	     SET_COUNT = 0
+	     display.show(SET_COUNT)
+        if button_b.was_pressed():
             SET_COUNT += 1
             display.show(SET_COUNT)
-        if button_a.is_pressed():
+        if button_a.was_pressed():
             SET_COUNT -= 1
             display.show(SET_COUNT)
         if accelerometer.was_gesture('shake'):
             menu()
-        if pin_logo.is_touched():
+        if pin_logo.was_touched():
             if SET_COUNT == 1:
                 milk()
      
-def milk():
-    """ Cette fonction permet de compter la dose de lait donner au bébé 
-        Cette fonction permet de compter la dose de lait donner au bébé et l'envoyer au BEtag bébé
-    pré: le button a doit etre préssé dans le menu pour activer la fonction
-    post: affiche le compteur de dose de lait et l'envoit au BEtag enfant
-    """
-    global MILK_COUNT
-    display.scroll("Milk")
-    display.show(MILK_COUNT)
-    while True:
-        if button_b.is_pressed():
-            MILK_COUNT += 1
-            display.show(MILK_COUNT)
-            sleep(500)
-        if button_a.is_pressed():
-            MILK_COUNT -= 1
-            display.show(MILK_COUNT)
-            sleep(500)
-        if accelerometer.was_gesture('shake'):
-            MILK_COUNT = 0
-            display.show(MILK_COUNT) #je fais un test
-            
-            sleep(500)
-        if pin_logo.is_touched():
-            send_packet('01',MILK_COUNT,key)
-            menu()
+
+
 
 def vigenere(message, key, decryption=False):
     text = ""
@@ -150,6 +131,7 @@ def vigenere(message, key, decryption=False):
 
 def unpack_data (encrypted_packed,key) : 
     global dictionnary
+    global MILK_COUNT
     decryption_message = encrypted_packed.split('|')
     message_en_clair = decryption_message[2].split(':')
     encrypted_packet = tuple(message_en_clair)
@@ -176,8 +158,8 @@ def unpack_data (encrypted_packed,key) :
                 else : 
                     dictionnary['01'].append(nonce_decrypted)
                     display.scroll('Message added')
-                    message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    hashing_value = hashing(message_decripte_vigenere)
+                    message_decripte_vigenere = vigenere(content,key,True)
+		    MILK_COUNT = message_decripte_vigenere 
                     return message_decripte_vigenere
                     
             if clef == '02' : 
