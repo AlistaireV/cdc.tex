@@ -14,7 +14,7 @@ for element in lst :
 
 MILK_COUNT = 0
 SET_COUNT=0
-content = 0
+NBA=0
 
 def menu():
     """ Cette fonction et l interface menu 
@@ -62,8 +62,6 @@ def setting():
                 milk()
                 pass
 
-if __name__ == '__main__':
-    setting()
      
 def milk():
     """Cette fonction permet de compter la dose de lait donnée au bébé
@@ -162,7 +160,7 @@ def vigenere(message, key, decryption=False):
 
 
 def unpack_data (encrypted_packed,key) : 
-    global content
+    global NBA
     decryption_message = encrypted_packed.split('|')
     message_en_clair = decryption_message[2].split(':')
     encrypted_packet = tuple(message_en_clair)
@@ -181,7 +179,7 @@ def unpack_data (encrypted_packed,key) :
                     dictionnary['00'].append(nonce_decrypted)
                     display.scroll('Message added connexion')
                     message_decripte_vigenere = vigenere(content,key,True) #Here we will decrypt the content of the message
-                    calcul_response(message_decripte_vigenere)
+                    calcul_response(NBA)
                     return message_decripte_vigenere 
             if clef == '01' : 
                 nonce_decrypted = vigenere(nonce,key,True)
@@ -214,12 +212,12 @@ def unpack_data (encrypted_packed,key) :
 
 def establish_connexion(key): 
     global nbre_alea 
-    global content
+    global NBA
     display.scroll("Connexion ...")
-    content= random.randrange(5000)
+    NBA= random.randrange(5000)
     nbre_alea = random.randrange(5000)
     nbre_alea_crypted = vigenere(nbre_alea,key)
-    message_a_decrypter = vigenere(content,key)
+    message_a_decrypter = vigenere(NBA,key)
     encrypted_message = nbre_alea_crypted + ':' + message_a_decrypter
     len_message = len(encrypted_message)
     radio_send = '{0}|{1}|{2}'.format('00',str(len_message),encrypted_message)
@@ -237,11 +235,10 @@ def send_message (type_message,contenu,key):
 
 def calcul_response (message) :
     global key
-    global content
-    message_deballe = unpack_data(message,key)
-    answer_challenge = content *5
+    global NBA
+    answer_challenge = NBA *5
     hashing_value_challenge = hashing(str(answer_challenge)) 
-    if message_deballe == str(hashing_value_challenge) :
+    if message == str(hashing_value_challenge) :
         display.scroll("Clef authentifiée")
         key += str(answer_challenge)
         display.scroll(key)
