@@ -57,15 +57,20 @@ def setting():
                 milk()
      
 def milk():
-    """ Cette fonction permet de compter la dose de lait donner au bébé 
-        Cette fonction permet de compter la dose de lait donner au bébé et l'envoyer au BEtag bébé
-    pré: le button a doit etre préssé dans le menu pour activer la fonction
-    post: affiche le compteur de dose de lait et l'envoit au BEtag enfant
+    """Cette fonction permet de compter la dose de lait donnée au bébé
+    Cette fonction permet de compter la dose de lait donnée au bébé et l'envoyer au BEtag bébé
+    pré: le bouton a doit être pressé dans le menu pour activer la fonction
+    post: affiche le compteur de dose de lait et l'envoie au BEtag enfant
     """
     global MILK_COUNT
     display.scroll("Milk")
     display.show(MILK_COUNT)
+    
     while True:
+        if MILK_COUNT <= 0:
+            MILK_COUNT = 0
+            display.show(MILK_COUNT)
+            sleep(500)
         if button_b.is_pressed():
             MILK_COUNT += 1
             display.show(MILK_COUNT)
@@ -76,8 +81,7 @@ def milk():
             sleep(500)
         if accelerometer.was_gesture('shake'):
             MILK_COUNT = 0
-            display.show(MILK_COUNT) #je fais un test
-            
+            display.show(MILK_COUNT)  # je fais un test
             sleep(500)
         if pin_logo.is_touched():
             menu()
